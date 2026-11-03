@@ -14,6 +14,9 @@ from .viz import show_weights
 from .bench import time_steps
 from .helpers import get_device, plot_history
 from .explore import StoryLLM, load_story_llm
+from .playground import *  # noqa: F401,F403  (7장)
+from .chat import *  # noqa: F401,F403  (14장)
+from . import playground as _pg, chat as _chat
 
 __version__ = "0.3.0"
 
@@ -27,4 +30,4 @@ __all__ = [
     "format_pair", "load_sft_texts", "get_file", "mount_drive", "show_weights", "time_steps",
     "get_device", "plot_history",
     "StoryLLM", "load_story_llm",
-]
+] + list(_pg.__all__) + list(_chat.__all__)
