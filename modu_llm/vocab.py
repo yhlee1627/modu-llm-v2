@@ -1,4 +1,4 @@
-"""2장: 글자 사전."""
+"""글자 사전. (원리는 3장, 코드는 8장부터)"""
 import json
 
 from .settings import END

@@ -1,4 +1,4 @@
-"""10장: 글 생성."""
+"""12~14장: 글 생성."""
 import torch
 from torch.nn import functional as F
 

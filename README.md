@@ -22,8 +22,16 @@ LLM의 원리를 그림과 비유로 배우고, 저자가 학습시킨 작은 �
 | 5 | `notebooks/ch05.ipynb` 여러 눈으로 보고 혼자 정리하기: Transformer 블록 | 불필요 |
 | 6 | `notebooks/ch06.ipynb` LLM은 어떻게 배우고 말할까요? | 불필요 |
 | 7 | `notebooks/ch07.ipynb` LLM 놀이터: 내 이야기 LLM 들여다보기 | 불필요 |
+| 8 | `notebooks/ch08.ipynb` 숫자 표와 곱하고 더하기: 텐서와 행렬 곱셈 | 불필요 |
+| 9 | `notebooks/ch09.ipynb` 점수를 비율로, 숫자를 바꾸는 부품 | 불필요 |
+| 10 | `notebooks/ch10.ipynb` 틀린 만큼 고치기: 손실과 경사 하강 | 불필요 |
+| 11 | `notebooks/ch11.ipynb` 이야기 데이터와 어텐션 헤드 | 불필요 |
+| 12 | `notebooks/ch12.ipynb` 작은 GPT 조립하기 | 불필요 |
+| 13 | `notebooks/ch13.ipynb` 사전학습과 글 만들기 | 30분 학습에 필요(T4) |
+| 14 | `notebooks/ch14.ipynb` 파인튜닝과 나만의 챗봇 | 파인튜닝에 필요(T4) |
+| 부록 A | `notebooks/appA.ipynb` 파이썬 기초 | 불필요 |
 
-(장을 마칠 때마다 추가합니다.)
+13·14장의 학습 셀은 건너뛰어도 됩니다. 다음 셀에서 저자가 학습시킨 모델 파일을 내려받아 이어 갑니다.
 
 ## 패키지 `modu_llm`
 
@@ -56,7 +64,19 @@ llm.write("어느 날, ")           # 이어서 이야기 쓰기
 
 `llm.next_chars`와 `llm.write`에는 `temperature`(온도)와 `top_k`를 줄 수 있습니다.
 
-8~14장에서 쓰는 부품(글자 사전, 임베딩, 어텐션, 블록, GPT, 학습)도 같은 패키지에 들어 있습니다. 모델 코드는 `modu_llm/model_basic.py`, `modu_llm/model.py`에서 볼 수 있습니다.
+| 8~14장에서 쓰는 것 | 하는 일 |
+|---|---|
+| `Vocab.build()` | 글자 사전 2,453자 |
+| `load_stories(n)`, `encode_texts(texts, vocab)` | 이야기 내려받기, 번호 배열로 바꾸기 |
+| `GPTConfig`, `Embeddings`, `Head`, `Block`, `TinyGPT` | 기본 GPT 부품(`model_basic.py`, 한국어 주석) |
+| `show_weights(weights, labels)` | 비율 표 보기 |
+| `get_batch(data, block_size, batch_size)` | 문제와 정답 조각 만들기 |
+| `get_device()`, `mount_drive()`, `get_file(name)` | GPU 확인, 드라이브 연결, 저자 모델 파일 내려받기 |
+| `prepare_stories(n, vocab, folder)` | 사전학습용 데이터 준비 |
+| `GPT`, `train(...)`, `load_checkpoint(...)`, `plot_history(history)` | 빠른 GPT(`model.py`), 학습 반복, 이어서 학습하기, 손실 그래프 |
+| `generate(model, vocab, text, ...)` | 이어서 글 쓰기 |
+| `format_pair(request)`, `load_sft_texts(split)` | 요청-이야기 형식, 파인튜닝 데이터 |
+| `chat_app(chat_fn)` | 나만의 이야기 챗봇 화면(Gradio) |
 
 ## 모델 설정
 

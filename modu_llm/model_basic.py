@@ -1,4 +1,4 @@
-"""3~7장: 이해하기 쉬운 기본 GPT. (학습에는 8장의 빠른 GPT를 씁니다.)
+"""11·12장: 이해하기 쉬운 기본 GPT. (학습에는 model.py의 빠른 GPT를 씁니다.)
 부품은 문장 하나(글자, 숫자)와 배치(문장, 글자, 숫자)를 모두 받습니다."""
 import torch
 from torch import nn
@@ -6,19 +6,19 @@ from torch.nn import functional as F
 
 
 class GPTConfig:
-    """3장: 모델의 크기를 정하는 설정 다섯 개를 담는 상자."""
+    """12장: 모델의 크기를 정하는 설정 다섯 개를 담는 상자."""
 
     def __init__(self, vocab_size=2453, block_size=384, n_embd=256,
                  n_head=4, n_layer=6):
-        self.vocab_size = vocab_size    # 사전의 글자 수 (2장)
-        self.block_size = block_size    # 한 번에 보는 글자 수 (3.1)
-        self.n_embd = n_embd            # 글자 벡터의 길이 (3.5)
-        self.n_head = n_head            # 어텐션 헤드 수 (5장에서 씀)
-        self.n_layer = n_layer          # 블록 층 수 (6장에서 씀)
+        self.vocab_size = vocab_size    # 사전의 글자 수
+        self.block_size = block_size    # 한 번에 보는 글자 수
+        self.n_embd = n_embd            # 글자 벡터의 길이
+        self.n_head = n_head            # 어텐션 헤드 수
+        self.n_layer = n_layer          # 블록 층 수
 
 
 class Embeddings(nn.Module):
-    """3장: 글자 임베딩 + 위치 임베딩."""
+    """글자 임베딩 + 위치 임베딩. (원리는 3장)"""
 
     def __init__(self, cfg):
         super().__init__()
@@ -34,7 +34,7 @@ class Embeddings(nn.Module):
 
 
 class Head(nn.Module):
-    """4장: 어텐션 헤드 하나."""
+    """11장: 어텐션 헤드 하나. (원리는 4장)"""
 
     def __init__(self, cfg, head_size):
         super().__init__()
@@ -59,7 +59,7 @@ class Head(nn.Module):
 
 
 class MultiHead(nn.Module):
-    """5장: 헤드 여러 개를 나란히."""
+    """헤드 여러 개를 나란히. (원리는 5장)"""
 
     def __init__(self, cfg):
         super().__init__()
@@ -87,7 +87,7 @@ def make_mlp(cfg):
 
 
 class Block(nn.Module):
-    """6장: Transformer 블록."""
+    """Transformer 블록. (원리는 5장)"""
 
     def __init__(self, cfg):
         super().__init__()
@@ -107,7 +107,7 @@ class Block(nn.Module):
 
 
 class TinyGPT(nn.Module):
-    """7장: 기본 GPT."""
+    """12장: 기본 GPT."""
 
     def __init__(self, cfg):
         super().__init__()

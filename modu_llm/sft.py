@@ -1,4 +1,4 @@
-"""11·12장: 요청-이야기 형식."""
+"""14장: 요청-이야기 형식."""
 from .settings import SFT_REPO
 
 

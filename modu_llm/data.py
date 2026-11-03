@@ -1,4 +1,4 @@
-"""2·3·9장: 이야기 불러오기, 인코딩, 배치."""
+"""11~14장: 이야기 불러오기, 인코딩, 배치."""
 import os
 import time
 
@@ -39,7 +39,7 @@ def get_batch(data, block_size, batch_size, device="cpu"):
 
 
 def prepare_stories(n, vocab, folder, ratio=0.9):
-    """9장: 이야기 n편을 번호 배열로 준비하고 (학습용, 검증용)을 돌려줍니다.
+    """13장: 이야기 n편을 번호 배열로 준비하고 (학습용, 검증용)을 돌려줍니다.
     folder에 tokens_n.npy가 있으면 불러오고, 없으면 내려받아 인코딩한 뒤 저장합니다."""
     path = os.path.join(folder, f"tokens_{n}.npy")
     if os.path.exists(path):
