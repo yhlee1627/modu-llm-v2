@@ -12,8 +12,8 @@ def get_device(seed=42, need_gpu=False):
         device = "cpu"
     print("장치:", device)
     if need_gpu and device == "cpu":
-        print("⚠ GPU가 연결되지 않았어요. 런타임 → 런타임 유형 변경 → T4 GPU를 고르세요.")
-        print("  GPU를 받을 수 없다면 이 장의 학습은 건너뛰고, 다음 장에서 저자 체크포인트를 쓰면 돼요.")
+        print("⚠ GPU가 연결되지 않았습니다. 런타임 → 런타임 유형 변경 → T4 GPU를 고르세요.")
+        print("  GPU를 받을 수 없다면 학습하는 셀은 건너뛰세요. 그다음 셀에서 저자가 학습시킨 모델 파일을 내려받아 씁니다.")
     return device
 
 
