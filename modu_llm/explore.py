@@ -1,4 +1,4 @@
-"""첫째·둘째 마당: 저자가 학습시킨 이야기 LLM을 불러와 들여다보는 도구.
+"""첫째·둘째 마당: 미리 학습시켜 둔 이야기 LLM을 불러와 들여다보는 도구.
 
 책의 1~7장 실습에서 씁니다. 코드는 한두 줄이고, 독자는 따옴표 안의 문장과 숫자만 바꿉니다.
     llm = load_story_llm()            # 사전학습을 마친 이야기 LLM
@@ -13,23 +13,25 @@ from torch.nn import functional as F
 from .generate import generate
 from .model import GPT
 from .model_basic import GPTConfig
+from .real import _has_final, _split_repeat, _summary
 from .settings import ASSET_REPO
 from .sft import format_pair
 from .vocab import Vocab
 
-# 불러올 수 있는 모델: 이름 → 저자 허깅페이스의 파일 이름
+# 불러올 수 있는 모델: 이름 → 허깅페이스에 올려 둔 파일 이름
 STAGES = {
     "before": None,                  # 학습 전(무작위 숫자로 채운 모델)
     "pretrain": "pretrain.pt",       # 이야기 데이터로 사전학습
     "sft": "sft.pt",                 # 요청을 따르도록 파인튜닝
+    "feedback": "feedback.pt",       # 파인튜닝 모델을 선호 데이터 짝으로 한 번 더 학습(DPO)
     "step250": "ckpt_step250.pt",    # 사전학습 도중의 모습
     "step1000": "ckpt_step1000.pt",
     "step3000": "ckpt_step3000.pt",
 }
 
 STAGE_NAMES = {
-    "before": "학습 전", "pretrain": "사전학습", "sft": "파인튜닝",
-    "step250": "사전학습 250걸음", "step1000": "사전학습 1,000걸음", "step3000": "사전학습 3,000걸음",
+    "before": "학습 전", "pretrain": "사전학습", "sft": "파인튜닝", "feedback": "피드백 학습",
+    "step250": "사전학습 250번", "step1000": "사전학습 1,000번", "step3000": "사전학습 3,000번",
 }
 
 
@@ -181,13 +183,32 @@ class StoryLLM:
         prompt = format_pair(request)
         print(prompt + self.continue_text(prompt, length, temperature, top_k))
 
-    def losses(self, text):
-        """글자마다 손실 표와 문장 손실(평균)을 보여 줍니다."""
-        rows = self.char_losses(text)
-        print(f"{pad('글자')} {'확률':>5} {'손실':>5}")
-        for ch, p, l in rows:
-            print(f"{pad(show_char(ch))} {p:7.3f} {l:7.2f}")
-        print(f"문장 손실(평균): {sum(r[2] for r in rows) / len(rows):.2f}")
+    def losses(self, text, repeat=1):
+        """글자마다 손실 표와 문장 손실(평균)을 보여 줍니다.
+        repeat=2: text를 띄어쓰기를 사이에 두고 두 번 넣고, 첫 번째와 두 번째의 손실을 나란히 보여 줍니다.
+        (두 문구 모두 첫 글자는 빼고 나란히 봅니다.)"""
+        if repeat == 1:
+            rows = self.char_losses(text)
+            print(f"{pad('글자')} {'확률':>5} {'손실':>5}")
+            for ch, p, l in rows:
+                print(f"{pad(show_char(ch))} {p:7.3f} {l:7.2f}")
+            print(f"문장 손실(평균): {sum(r[2] for r in rows) / len(rows):.2f}")
+            return
+        if repeat != 2:
+            raise ValueError("repeat는 1이나 2로 정하세요.")
+        n = len(self._chars(text))
+        if n < 2:
+            raise ValueError("문구가 너무 짧습니다. 두 글자 이상인 문구로 해 보세요.")
+        rows = self.char_losses(text + " " + text)      # rows[k]는 (k+1)번째 글자
+        first, second = rows[0:n - 1], rows[n + 1:]
+        josa = "을" if _has_final(text) else "를"
+        print(f"'{text}'{josa} 두 번 넣고 글자마다 손실 비교")
+        print("글자    첫 번째   두 번째")
+        for a, b in zip(first, second):
+            print(pad(show_char(a[0]), 6) + f"{a[2]:8.2f}{b[2]:10.2f}")
+        ma = sum(a[2] for a in first) / len(first)
+        mb = sum(b[2] for b in second) / len(second)
+        print(pad("평균", 6) + f"{ma:8.2f}{mb:10.2f}")
 
     def attention(self, text, layer=1, head=1, digits=2, total=False):
         """layer층 head번 헤드의 비율 표를 색칠한 표로 보여 줍니다.
@@ -232,11 +253,16 @@ class StoryLLM:
             j = int(w[t].argmax())
             print(f"{pad(f'{t + 1}:{show_char(chars[t])}', 6)} → {pad(f'{j + 1}:{show_char(chars[j])}', 6)} {w[t, j].item():.2f}")
 
-    def heads_summary(self, text):
+    def heads_summary(self, text, top=None, by=None):
         """모든 층·헤드가 무엇을 주로 참고하는지 평균 비율로 보여 줍니다.
+        top과 by를 주면(14장) 진짜 LLM과 같은 표로, by 칸이 큰 헤드 top개만 보여 줍니다.
+        맨 앞(첫 글자) · 자기 · 바로 앞 · (따라 하기) · 그 밖.
+        top과 by를 비우면(5장) 아래 여섯 칸의 표를 모든 헤드에 대해 보여 줍니다.
         참고하는 글자를 다음 차례로 한 칸에만 넣으므로 한 줄의 합은 1입니다.
         자기 자신 → 바로 앞 글자 → 첫 글자 → 띄어쓰기 → 문장부호(.,!?) → 그 밖
         '가장 큰 것'은 '그 밖'을 뺀 다섯 칸 가운데 가장 큰 칸입니다."""
+        if top is not None or by is not None:
+            return self._heads_top(text, top or 5, by or "바로 앞")
         chars = self._chars(text)
         T = len(chars)
         names = ["자기", "바로 앞", "첫 글자", "띄어쓰기", "문장부호", "그 밖"]
@@ -264,6 +290,24 @@ class StoryLLM:
                         vals[kind(j, t)] += w[t, j].item() / (T - 1)
                 best = names[max(range(5), key=lambda i: vals[i])]   # '그 밖'은 빼고 고름
                 print(f"{pad(f'층{layer} 헤드{head}', 10)}" + "".join(f"{v:<9.2f}" for v in vals) + best)
+
+    def _heads_top(self, text, top, by):
+        """14장: 진짜 LLM의 heads_summary와 같은 표."""
+        L, H = len(self.model.blocks), self.model.cfg.n_head
+        atts = [torch.stack([self.attention_weights(text, l, h) for h in range(1, H + 1)])
+                for l in range(1, L + 1)]
+        phrase = _split_repeat(text)
+        if phrase is not None:
+            n = len(self._chars(phrase))
+            if n < 3:
+                raise ValueError("문구가 너무 짧습니다. 세 글자 이상인 문구로 해 보세요.")
+            q0 = n + 1
+            queries = [q0 + k for k in range(1, n - 1)]
+            copy_of = {q0 + k: k + 1 for k in range(1, n - 1)}
+        else:
+            queries = list(range(2, len(self._chars(text))))
+            copy_of = None
+        _summary(atts, queries, copy_of, top, by)
 
     def layer_guess(self, text, k=3):
         """임베딩만 거쳤을 때와 블록을 한 층씩 지날 때마다 다음 글자를 맞혀 보게 합니다."""
@@ -325,24 +369,29 @@ class StoryLLM:
         for i, c in enumerate(chars):
             print(f"{pad(f'{i + 1}:{show_char(c)}', 10)}{fmt(tok[i])} + {fmt(pos[i])} = {fmt(tok[i] + pos[i])}")
 
-    def compare_tokens(self, text, name):
-        """이야기 LLM과 다른 LLM(허깅페이스 이름)이 같은 글을 토큰으로 나누는 모습을 비교합니다."""
+    def compare_tokens(self, text, *names):
+        """이야기 LLM과 다른 LLM들(허깅페이스 이름, 여러 개 가능)이 같은 글을 토큰으로 나누는 모습을 비교합니다."""
         from transformers import AutoTokenizer
-        tok = AutoTokenizer.from_pretrained(name)
-        ids = tok.encode(text, add_special_tokens=False)
-        pieces = [tok.decode([i]).replace(" ", "␣") for i in ids]
         mine = [show_char(c) for c in self._chars(text)]
         print(f"이야기 LLM: 토큰 {len(mine)}개 (사전 {len(self.vocab):,}개)")
         print("|".join(mine))
-        print(f"{name.split('/')[-1]}: 토큰 {len(ids)}개 (사전 {len(tok):,}개)")
-        print("|".join(pieces))
+        missing = self.vocab.unknown_chars(text)
+        if missing:
+            print("사전에 없어 건너뛴 글자: " + " ".join(missing))
+        for name in names:
+            # clean_up_tokenization_spaces=False: 일부 토크나이저가 내는 경고를 없앱니다(출력은 같음).
+            tok = AutoTokenizer.from_pretrained(name, clean_up_tokenization_spaces=False)
+            ids = tok.encode(text, add_special_tokens=False)
+            pieces = [tok.decode([i]).replace(" ", "␣") for i in ids]
+            print(f"{name.split('/')[-1]}: 토큰 {len(ids)}개 (사전 {len(tok):,}개)")
+            print("|".join(pieces))
 
 
 
 
 def load_story_llm(stage="pretrain", seed=42, verbose=True):
-    """저자가 학습시킨 이야기 LLM을 불러옵니다.
-    stage: "pretrain"(사전학습), "sft"(파인튜닝), "before"(학습 전),
+    """미리 학습시켜 둔 이야기 LLM을 불러옵니다.
+    stage: "pretrain"(사전학습), "sft"(파인튜닝), "feedback"(피드백 학습), "before"(학습 전),
            "step250"·"step1000"·"step3000"(사전학습 도중)
     seed: 글을 뽑을 때 쓰는 난수의 시작값. 같은 seed로 처음부터 실행하면 같은 글이 나옵니다.
     verbose: False면 "준비 완료"를 출력하지 않습니다."""

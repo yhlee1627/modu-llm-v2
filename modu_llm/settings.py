@@ -3,8 +3,8 @@
 # 이야기 데이터 (사전학습용)
 STORY_REPO = "psymon/Tiny-Ko-Stories"
 
-# 저자가 준비한 파일
-ASSET_REPO = "JosephLee/modu-llm"                 # 저자 체크포인트
+# 미리 준비해 둔 파일
+ASSET_REPO = "JosephLee/modu-llm"                 # 미리 학습시켜 둔 체크포인트
 SFT_REPO = "JosephLee/tiny-ko-stories-sft"         # 요청-이야기 데이터
 
 # 독자의 구글 드라이브 안 작업 폴더
