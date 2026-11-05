@@ -20,7 +20,7 @@ from .playground import *  # noqa: F401,F403  (7장)
 from .chat import *  # noqa: F401,F403  (12장)
 from . import playground as _pg, chat as _chat
 
-__version__ = "0.4.0"
+__version__ = "0.4.1"
 
 __all__ = [
     "ASSET_REPO", "DRIVE_DIR", "END", "SFT_REPO", "STORY_REPO",

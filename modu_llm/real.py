@@ -331,7 +331,8 @@ def load_llm(name, seed=42, verbose=True):
     """허깅페이스의 LLM을 이름으로 불러옵니다.
     예: load_llm("naver-hyperclovax/HyperCLOVAX-SEED-Text-Instruct-0.5B")
     처음에는 모델 파일을 내려받느라 시간이 걸립니다(0.5B 모델 약 1.1GB).
-    약관 동의가 필요한 모델(예: google/gemma-3-1b-pt)은 허깅페이스에서 동의하고 토큰을 설정해야 합니다(부록 C)."""
+    약관 동의가 필요한 모델(예: google/gemma-3-1b-pt)은 허깅페이스에서 약관에 동의하고,
+    코랩에서 notebook_login()으로 로그인(주소를 열고 8자리 코드 입력)한 뒤 불러옵니다(부록 C)."""
     from transformers import AutoModelForCausalLM, AutoTokenizer
     from transformers.utils import logging as hf_logging
     level = hf_logging.get_verbosity()

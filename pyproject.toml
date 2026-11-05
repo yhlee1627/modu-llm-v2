@@ -4,11 +4,11 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "modu-llm"
-version = "0.4.0"
+version = "0.4.1"
 description = "『모두의 LLM with 파이썬』 실습 패키지"
 requires-python = ">=3.9"
 # torch·transformers는 Colab에 이미 설치되어 있으므로 다시 설치하지 않습니다.
-dependencies = ["numpy", "pandas", "datasets", "huggingface_hub"]
+dependencies = ["numpy", "pandas", "datasets", "huggingface_hub>=1.20"]   # 1.20부터 8자리 코드로 로그인(notebook_login)
 
 [tool.setuptools]
 packages = ["modu_llm"]
