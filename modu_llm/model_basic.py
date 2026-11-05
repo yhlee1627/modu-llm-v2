@@ -1,4 +1,4 @@
-"""11·12장: 이해하기 쉬운 기본 GPT. (학습에는 model.py의 빠른 GPT를 씁니다.)
+"""9·10장: 이해하기 쉬운 기본 GPT. (학습에는 model.py의 빠른 GPT를 씁니다.)
 부품은 문장 하나(글자, 숫자)와 배치(문장, 글자, 숫자)를 모두 받습니다."""
 import torch
 from torch import nn
@@ -6,7 +6,7 @@ from torch.nn import functional as F
 
 
 class GPTConfig:
-    """12장: 모델의 크기를 정하는 설정 다섯 개를 담는 상자."""
+    """10장: 모델의 크기를 정하는 설정 다섯 개를 담는 상자."""
 
     def __init__(self, vocab_size=2453, block_size=384, n_embd=256,
                  n_head=4, n_layer=6):
@@ -34,7 +34,7 @@ class Embeddings(nn.Module):
 
 
 class Head(nn.Module):
-    """11장: 어텐션 헤드 하나. (원리는 4장)"""
+    """9장: 어텐션 헤드 하나. (원리는 4장)"""
 
     def __init__(self, cfg, head_size):
         super().__init__()
@@ -107,7 +107,7 @@ class Block(nn.Module):
 
 
 class TinyGPT(nn.Module):
-    """12장: 기본 GPT."""
+    """10장: 기본 GPT."""
 
     def __init__(self, cfg):
         super().__init__()

@@ -74,7 +74,7 @@ def open_playground(llm=None, share=None):
 
     start = STAGE_NAMES[llm.stage] if llm is not None and llm.stage in PLAY_STAGES else STAGE_NAMES["pretrain"]
     with gr.Blocks(title="이야기 LLM 놀이터") as demo:
-        gr.Markdown("## 이야기 LLM 놀이터\n저자가 학습시킨 이야기 LLM을 만져 봅니다. 글을 바꾸고 버튼을 누르세요.")
+        gr.Markdown("## 이야기 LLM 놀이터\n미리 학습시켜 둔 이야기 LLM을 만져 봅니다. 글을 바꾸고 버튼을 누르세요.")
         stage = gr.Dropdown([STAGE_NAMES[s] for s in PLAY_STAGES], value=start, label="학습 단계")
         with gr.Tab("다음 글자"):
             t1 = gr.Textbox("어느 날, ", label="글")

@@ -1,4 +1,4 @@
-"""모든 장: 저장물 찾기. 독자가 만든 파일이 있으면 그것을, 없으면 저자 파일을 내려받습니다."""
+"""모든 장: 저장물 찾기. 독자가 만든 파일이 있으면 그것을, 없으면 미리 학습시켜 둔 파일을 내려받습니다."""
 import os
 
 from .settings import ASSET_REPO, DRIVE_DIR
@@ -14,7 +14,7 @@ def mount_drive():
 
 def get_file(name, folder=DRIVE_DIR, repo=ASSET_REPO):
     """name 파일의 경로를 돌려줍니다.
-    ① 드라이브 작업 폴더 ② 현재 폴더 ③ 저자 허깅페이스 순서로 찾습니다."""
+    ① 드라이브 작업 폴더 ② 현재 폴더 ③ 허깅페이스(미리 학습시켜 둔 파일) 순서로 찾습니다."""
     for d in [folder, "."]:
         path = os.path.join(d, name)
         if os.path.exists(path):
@@ -22,5 +22,5 @@ def get_file(name, folder=DRIVE_DIR, repo=ASSET_REPO):
             return path
     from huggingface_hub import hf_hub_download
     path = hf_hub_download(repo, name)
-    print(f"저자 파일 내려받음: {name}")
+    print(f"미리 학습시켜 둔 파일 내려받음: {name}")
     return path
