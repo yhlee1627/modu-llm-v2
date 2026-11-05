@@ -28,7 +28,7 @@ LLM의 원리를 그림과 비유로 배우고, 미리 학습시켜 둔 작은 �
 | 11 | `notebooks/ch11.ipynb` 사전학습과 글 만들기 | 30분 학습에 필요(T4) |
 | 12 | `notebooks/ch12.ipynb` 파인튜닝과 나만의 챗봇 | 파인튜닝에 필요(T4) |
 | 13 | `notebooks/ch13.ipynb` 진짜 LLM에 같은 질문 던지기 | 불필요(내려받기 약 1.1GB) |
-| 14 | `notebooks/ch14.ipynb` 진짜 LLM 속 들여다보기 | 불필요(Gemma는 약관 동의와 토큰 필요, 부록 C) |
+| 14 | `notebooks/ch14.ipynb` 진짜 LLM 속 들여다보기 | 불필요(Gemma는 약관 동의와 로그인 필요, 부록 C) |
 | 부록 A | `notebooks/appA.ipynb` 파이썬 기초 | 불필요 |
 
 11·12장의 학습 셀은 건너뛰어도 됩니다. 다음 셀에서 미리 학습시켜 둔 모델 파일을 내려받아 이어 갑니다.
